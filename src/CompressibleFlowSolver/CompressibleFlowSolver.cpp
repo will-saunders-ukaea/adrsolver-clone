@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-// File Laplace.h
+// File CompressibleFlowSolver.cpp
 //
 // For more information, please see: http://www.nektar.info
 //
@@ -28,55 +28,71 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 //
-// Description: Laplace solve routines
+// Description: Compressible Flow Equations framework solver
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef NEKTAR_SOLVERS_ADRSOLVER_EQUATIONSYSTEMS_LAPLACE_H
-#define NEKTAR_SOLVERS_ADRSOLVER_EQUATIONSYSTEMS_LAPLACE_H
-
+#include <SolverUtils/Driver.h>
 #include <SolverUtils/EquationSystem.h>
+#include <LibUtilities/BasicUtils/SessionReader.h>
 
+#include <LibUtilities/BasicUtils/Timer.h>
+
+using namespace std;
+using namespace Nektar;
 using namespace Nektar::SolverUtils;
 
-namespace Nektar
+int main(int argc, char *argv[])
 {
-    class Laplace : public EquationSystem
-    {
-    public:
-        /// Class may only be instantiated through the MemoryManager.
-        friend class MemoryManager<Laplace>;
+    LibUtilities::SessionReaderSharedPtr session;
+    SpatialDomains::MeshGraphSharedPtr graph;
+    string vDriverModule;
+    DriverSharedPtr drv;
 
-        /// Creates an instance of this class
-        static EquationSystemSharedPtr create(
-            const LibUtilities::SessionReaderSharedPtr& pSession,
-            const SpatialDomains::MeshGraphSharedPtr& pGraph)
+    try
+    {
+        // Create session reader.
+        session = LibUtilities::SessionReader::CreateInstance(argc, argv);
+
+        // Create MeshGraph.
+        graph = SpatialDomains::MeshGraph::Read(session);
+
+        // Create driver
+        session->LoadSolverInfo("Driver", vDriverModule, "Standard");
+        drv = GetDriverFactory().CreateInstance(vDriverModule, session, graph);
+
+        LibUtilities::Timer timer;
+        timer.Start();
+
+        // Execute driver
+        drv->Execute();
+
+        timer.Stop();
+        timer.AccumulateRegion("Execute");
+
+        // Print out timings if verbose
+        if (session->DefinesCmdLineArgument("verbose"))
         {
-            EquationSystemSharedPtr p = MemoryManager<Laplace>
-                ::AllocateSharedPtr(pSession, pGraph);
-            p->InitObject();
-            return p;
+            int iolevel;
+
+            session->LoadParameter("IO_Timer_Level",iolevel,1);
+            
+            LibUtilities::Timer::PrintElapsedRegions(session->GetComm(),
+                                                     std::cout, iolevel);
         }
 
-        /// Name of class
-        static std::string className;
+        // Finalise communications
+        session->Finalise();
+    }
+    catch (const std::runtime_error&)
+    {
+        return 1;
+    }
+    catch (const std::string& eStr)
+    {
+        cout << "Error: " << eStr << endl;
+    }
 
-    protected:
-        StdRegions::ConstFactorMap m_factors;
+    return 0;
 
-        Laplace(const LibUtilities::SessionReaderSharedPtr& pSession,
-                const SpatialDomains::MeshGraphSharedPtr& pGraph);
-
-        virtual ~Laplace();
-
-        virtual void v_InitObject();
-        virtual void v_GenerateSummary(SolverUtils::SummaryList& s);
-        virtual void v_DoSolve();
-
-    private:
-        virtual Array<OneD, bool> v_GetSystemSingularChecks();
-
-    };
 }
-
-#endif
