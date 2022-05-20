@@ -3,10 +3,18 @@ set( CMAKE_VERBOSE_MAKEFILE on )
 # probably do not need all these solvers
 
 
+if(NOT DEFINED ENV{NEKTAR_BUILD_PATH})
+    message(FATAL_ERROR "NEKTAR_BUILD_PATH is not set")
+endif(NOT DEFINED ENV{NEKTAR_BUILD_PATH})
+
+
 cmake_minimum_required(VERSION 3.12)
+
+set (CMAKE_CXX_STANDARD 11)
 
 # set the project name
 project(ADRSolver CXX)
+
 
 FIND_PACKAGE(Nektar++ REQUIRED)
 ADD_DEFINITIONS(${NEKTAR++_DEFINITIONS})
@@ -17,55 +25,22 @@ INCLUDE_DIRECTORIES(./src)
 LINK_DIRECTORIES(${NEKTAR++_LIBRARY_DIRS} ${NEKTAR++_TP_LIBRARY_DIRS})
 
 
-
-
-
-
-
-# Original link line
-# TARGET_LINK_LIBRARIES(ADRSolver ${NEKTAR++_LIBRARIES} ${NEKTAR++_TP_LIBRARIES})
-
+find_package(MPI REQUIRED)
+include_directories(${MPI_INCLUDE_PATH})
 
 
 file(GLOB ADRSOLVER_OBJS "${NEKTAR_BUILD_PATH}/solvers/ADRSolver/CMakeFiles/ADRSolver.dir/EquationSystems/*.o")
-#file(GLOB ADRSOLVER_OBJS "${NEKTAR_BUILD_PATH}/solvers/ADRSolver/CMakeFiles/ADRSolver.dir/EquationSystems/*.o")
-#SET_SOURCE_FILES_PROPERTIES(
-#  ${ADRSOLVER_OBJS}
-#  PROPERTIES
-#  EXTERNAL_OBJECT true
-#  GENERATED true
-#)
-#add_library(libadrsolver OBJECT IMPORTED ${ADRSOLVER_OBJS})
-
-#TARGET_LINK_LIBRARIES(
-#    ADRSolver 
-#    ${NEKTAR++_LIBRARIES} 
-#    ${NEKTAR++_TP_LIBRARIES}
-#    ${ADRSOLVER_OBJS}
-#)
-
-
-
-SET(ADRSolverSource
-    ./src/ADRSolver/ADRSolver.cpp
-)
+SET(ADRSolverSource ./src/ADRSolver/ADRSolver.cpp)
 add_executable(ADRSolver ${ADRSolverSource})
+set_target_properties(ADRSolver PROPERTIES COMPILE_FLAGS "${MPI_COMPILE_FLAGS}")
+TARGET_LINK_LIBRARIES(ADRSolver ${ADRSOLVER_OBJS} ${NEKTAR++_LIBRARIES} ${NEKTAR++_TP_LIBRARIES} ${MPI_LIBRARIES})
 
 
-# TARGET_LINK_LIBRARIES(ADRSolver ${NEKTAR++_LIBRARIES} ${NEKTAR++_TP_LIBRARIES} libadrsolver)
-TARGET_LINK_LIBRARIES(ADRSolver ${NEKTAR++_LIBRARIES} ${NEKTAR++_TP_LIBRARIES} ${ADRSOLVER_OBJS})
-
-
-SET(CompressibleFlowSolverSource
-    ./src/CompressibleFlowSolver/CompressibleFlowSolver.cpp
-)
+SET(CompressibleFlowSolverSource ./src/CompressibleFlowSolver/CompressibleFlowSolver.cpp)
 add_executable(CompressibleFlowSolver ${CompressibleFlowSolverSource})
-
-
+set_target_properties(CompressibleFlowSolver PROPERTIES COMPILE_FLAGS "${MPI_COMPILE_FLAGS}")
 file(GLOB CFSSOLVER_OBJS "${NEKTAR_BUILD_PATH}/solvers/CompressibleFlowSolver/CMakeFiles/*/*/*.o")
-
-
-TARGET_LINK_LIBRARIES(CompressibleFlowSolver ${NEKTAR++_LIBRARIES} ${NEKTAR++_TP_LIBRARIES} ${CFSSOLVER_OBJS})
+TARGET_LINK_LIBRARIES(CompressibleFlowSolver ${CFSSOLVER_OBJS} ${NEKTAR++_LIBRARIES} ${NEKTAR++_TP_LIBRARIES} ${MPI_LIBRARIES})
 
 
 
