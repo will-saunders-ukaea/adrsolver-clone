@@ -13,7 +13,7 @@ cmake_minimum_required(VERSION 3.12)
 set (CMAKE_CXX_STANDARD 11)
 
 # set the project name
-project(ADRSolver CXX)
+project(CombinedSolver CXX)
 
 
 FIND_PACKAGE(Nektar++ REQUIRED)
@@ -29,47 +29,12 @@ find_package(MPI REQUIRED)
 include_directories(${MPI_INCLUDE_PATH})
 
 
-file(GLOB ADRSOLVER_OBJS "${NEKTAR_BUILD_PATH}/solvers/ADRSolver/CMakeFiles/ADRSolver.dir/EquationSystems/*.o")
-SET(ADRSolverSource ./src/ADRSolver/ADRSolver.cpp)
-add_executable(ADRSolver ${ADRSolverSource})
-set_target_properties(ADRSolver PROPERTIES COMPILE_FLAGS "${MPI_COMPILE_FLAGS}")
-TARGET_LINK_LIBRARIES(ADRSolver ${ADRSOLVER_OBJS} ${NEKTAR++_LIBRARIES} ${NEKTAR++_TP_LIBRARIES} ${MPI_LIBRARIES})
-
-
-SET(CompressibleFlowSolverSource ./src/CompressibleFlowSolver/CompressibleFlowSolver.cpp)
-add_executable(CompressibleFlowSolver ${CompressibleFlowSolverSource})
-set_target_properties(CompressibleFlowSolver PROPERTIES COMPILE_FLAGS "${MPI_COMPILE_FLAGS}")
 file(GLOB CFSSOLVER_OBJS "${NEKTAR_BUILD_PATH}/solvers/CompressibleFlowSolver/CMakeFiles/*/*/*.o")
-TARGET_LINK_LIBRARIES(CompressibleFlowSolver ${CFSSOLVER_OBJS} ${NEKTAR++_LIBRARIES} ${NEKTAR++_TP_LIBRARIES} ${MPI_LIBRARIES})
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+file(GLOB ADRSOLVER_OBJS "${NEKTAR_BUILD_PATH}/solvers/ADRSolver/CMakeFiles/ADRSolver.dir/EquationSystems/*.o")
+SET(CombinedSolverSource ./src/CombinedSolver/CombinedSolver.cpp)
+add_executable(CombinedSolver ${CombinedSolverSource})
+set_target_properties(CombinedSolver PROPERTIES COMPILE_FLAGS "${MPI_COMPILE_FLAGS}")
+TARGET_LINK_LIBRARIES(CombinedSolver ${ADRSOLVER_OBJS} ${CFSSOLVER_OBJS} ${NEKTAR++_LIBRARIES} ${NEKTAR++_TP_LIBRARIES} ${MPI_LIBRARIES})
 
 
 
