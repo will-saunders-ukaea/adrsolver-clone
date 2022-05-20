@@ -1,6 +1,6 @@
 # Nektar++ Base
 
-Clone of ADRSolver and CompressibleFlowSolver
+Combines ADRSolver and CompressibleFlowSolver into one solver "CombinedSolver".
 
 Example build line:
 ```
