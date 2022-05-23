@@ -2,12 +2,6 @@ include(CMakeDependentOption)
 set( CMAKE_VERBOSE_MAKEFILE on )
 # probably do not need all these solvers
 
-
-if(NOT DEFINED ENV{NEKTAR_BUILD_PATH})
-    message(FATAL_ERROR "NEKTAR_BUILD_PATH is not set")
-endif(NOT DEFINED ENV{NEKTAR_BUILD_PATH})
-
-
 cmake_minimum_required(VERSION 3.12)
 
 set (CMAKE_CXX_STANDARD 11)
@@ -31,6 +25,10 @@ include_directories(${MPI_INCLUDE_PATH})
 
 file(GLOB CFSSOLVER_OBJS "${NEKTAR_BUILD_PATH}/solvers/CompressibleFlowSolver/CMakeFiles/*/*/*.o")
 file(GLOB ADRSOLVER_OBJS "${NEKTAR_BUILD_PATH}/solvers/ADRSolver/CMakeFiles/ADRSolver.dir/EquationSystems/*.o")
+
+message(STATUS "CFSSOLVER_OBJS=${CFSSOLVER_OBJS}")
+message(STATUS "ADRSOLVER_OBJS=${ADRSOLVER_OBJS}")
+
 SET(CombinedSolverSource ./src/CombinedSolver/CombinedSolver.cpp)
 add_executable(CombinedSolver ${CombinedSolverSource})
 set_target_properties(CombinedSolver PROPERTIES COMPILE_FLAGS "${MPI_COMPILE_FLAGS}")
